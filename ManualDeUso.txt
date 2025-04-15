@@ -1,0 +1,67 @@
+
+
+### 📦 Requisitos Previos
+
+- Tener un manejador de base de datos instalado (MySQL, PostgreSQL, u otro compatible).
+- Python 3.9 o superior.
+
+
+---
+
+### ⚙️ Configuración de la Base de Datos
+
+1. **Crea la Base de Datos:**  
+   Ejecuta los archivos `ddl.sql` y `data.sql` en tu manejador de base de datos preferido.  
+   Esto generará la estructura y los datos iniciales necesarios para la simulación.
+
+---
+
+### 🔧 Configuración de Conexión a la Base de Datos
+
+2. **Modifica el archivo `DB_config`:**  
+   Abre el archivo `DB_config` incluido en el proyecto y reemplaza las credenciales por las correspondientes a tu entorno de base de datos:
+
+   ```python
+   host = 'TU_HOST'
+   user = 'TU_USUARIO'
+   password = 'TU_CONTRASEÑA'
+   database = 'TU_BASE_DE_DATOS'
+   ```
+
+---
+
+### 📥 Instalación de Dependencias
+
+3. **Instala los paquetes requeridos:**  
+   Desde la terminal, ubícate en la carpeta del proyecto y ejecuta:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+   Esto instalará todas las bibliotecas necesarias para que el programa funcione correctamente.
+
+---
+
+### 🚀 Ejecución del Programa
+
+4. **Corre el programa:**  
+   Una vez completados los pasos anteriores, puedes iniciar la simulación ejecutando:
+
+   ```bash
+   python main.py
+   ```
+
+---
+
+### 📌 Notas Adicionales
+
+- Verifica que tu servicio de base de datos esté activo antes de ejecutar el programa.
+- Si encuentras algún error de conexión, revisa nuevamente los valores en `DB_config`.
+- Puedes modificar los scripts SQL si deseas personalizar la estructura o los datos de prueba.
+
+---
+
+✅ ¡Listo! Ya puedes empezar a utilizar la simulación.
+
+---

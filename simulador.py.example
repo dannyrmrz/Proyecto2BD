@@ -1,0 +1,116 @@
+import threading
+import psycopg2
+import time
+import random
+
+
+DB_CONFIG = {
+    "dbname": "example",
+    "user": "example",
+    "password": "example",
+    "host": "127.0.0.1",
+    "port": "5432"
+}
+
+
+nivel_aislamiento = 'READ COMMITTED'
+id_asiento_reservar = 1
+id_evento_reservar = 1
+
+def reservar_asiento(nombre_cliente):
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        conn.set_session(isolation_level=nivel_aislamiento)
+        cursor = conn.cursor()
+
+        cursor.execute("BEGIN;")
+
+        cursor.execute("""
+            SELECT estado FROM Asiento
+            WHERE id_asiento = %s AND id_evento = %s FOR UPDATE;
+        """, (id_asiento_reservar, id_evento_reservar))
+        resultado = cursor.fetchone()
+
+        if resultado is None:
+            print(f"{nombre_cliente}: Asiento no existe.")
+            conn.rollback()
+            return
+
+        estado_actual = resultado[0]
+
+        if estado_actual == 'Reservado':
+            print(f"{nombre_cliente}: Asiento ya reservado.")
+            conn.rollback()
+        else:
+            cursor.execute("""
+                UPDATE Asiento
+                SET estado = 'Reservado'
+                WHERE id_asiento = %s AND id_evento = %s;
+            """, (id_asiento_reservar, id_evento_reservar))
+
+            cursor.execute("""
+                INSERT INTO Reserva (id_asiento, id_evento, nombre_cliente, estado)
+                VALUES (%s, %s, %s, 'Activa');
+            """, (id_asiento_reservar, id_evento_reservar, nombre_cliente))
+
+            conn.commit()
+            print(f"{nombre_cliente}: Reserva exitosa.")
+
+    except Exception as e:
+        print(f"{nombre_cliente}: Error -> {e}")
+        conn.rollback()
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def main():
+    global nivel_aislamiento, id_asiento_reservar, id_evento_reservar
+
+    print("=== Simulación de Reserva de Asiento ===\n")
+    print("Selecciona nivel de aislamiento de transacción:")
+    print("1) READ COMMITTED")
+    print("2) REPEATABLE READ")
+    print("3) SERIALIZABLE")
+    opcion = input("Opción: ")
+
+    if opcion == '1':
+        nivel_aislamiento = psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED
+    elif opcion == '2':
+        nivel_aislamiento = psycopg2.extensions.ISOLATION_LEVEL_REPEATABLE_READ
+    elif opcion == '3':
+        nivel_aislamiento = psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE
+    else:
+        print("Opción inválida. Usando READ COMMITTED.")
+        nivel_aislamiento = psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED
+
+    id_asiento_reservar = int(input("Número de ID de asiento a reservar: "))
+    id_evento_reservar = int(input("Número de ID de evento: "))
+
+    num_personas = int(input("Cantidad de personas (hilos) que intentarán reservar el mismo asiento: "))
+
+    hilos = []
+    print("\nIniciando reservas...\n")
+
+    tiempo_inicio = time.time()  
+
+    for i in range(num_personas):
+        nombre_cliente = f"Cliente_{i+1}"
+        hilo = threading.Thread(target=reservar_asiento, args=(nombre_cliente,))
+        hilos.append(hilo)
+
+    for hilo in hilos:
+        hilo.start()
+
+    for hilo in hilos:
+        hilo.join()
+
+    tiempo_fin = time.time()  
+
+    tiempo_total = tiempo_fin - tiempo_inicio
+    print(f"\nSimulación terminada.")
+    print(f"Tiempo total de ejecución: {tiempo_total:.4f} segundos.\n")
+
+
+if __name__ == "__main__":
+    main()
