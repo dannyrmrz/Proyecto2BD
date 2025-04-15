@@ -1,0 +1,29 @@
+Table Lugar {
+  id_lugar int [primary key]
+  nombre varchar
+  direccion varchar
+  capacidad int
+}
+
+Table Evento {
+  id_evento int [primary key]
+  nombre varchar
+  fecha date
+  id_lugar int [ref: > Lugar.id_lugar]
+}
+
+Table Asiento {
+  id_asiento int [primary key]
+  numero int
+  id_evento int [ref: > Evento.id_evento]
+  estado varchar
+}
+
+Table Reserva {
+  id_reserva int [primary key]
+  id_asiento int [ref: > Asiento.id_asiento]
+  id_evento int [ref: > Evento.id_evento]
+  nombre_cliente varchar
+  fecha_reserva date
+  estado varchar
+}
